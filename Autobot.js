@@ -18,243 +18,220 @@ var Autobot = {
         Autobot.initAjax();
         Autobot.initMapTownFeature();
         Autobot.fixMessage();
-        Assistant.init()
+        Assistant.init();
     },
-    /**
-     * Load all bot modules from CDN
-     */
     loadModules: function () {
         ModuleManager.loadModules();
     },
-    /**
-     * Initialize bot window - CORRIGIDO
-     */
     initWnd: function () {
-        if (!Autobot['isLogged']) {
+        if (!Autobot.isLogged) {
             return;
         }
-        //if window is already initialized
-        if (typeof Autobot.botWnd != 'undefined') {
+        if (typeof Autobot.botWnd !== 'undefined') {
             try {
-                Autobot['botWnd']['close']()
-            } catch (F) {};
-            Autobot['botWnd'] = undefined
-        };
+                Autobot.botWnd.close();
+            } catch (F) {}
+            Autobot.botWnd = undefined;
+        }
 
-        // CORRIGIDO: Removeu o HTML do título
         Autobot.botWnd = Layout.dialogWindow.open('', Autobot.title + ' v' + Autobot.version, 500, 350, '', false);
-        Autobot.botWnd.setHeight([350])
+        Autobot.botWnd.setHeight([350]);
         Autobot.botWnd.setPosition(['center', 'center']);
-        var _0xe20bx2 = Autobot.botWnd.getJQElement();
-        _0xe20bx2['append']($('<div/>', {
-            "\x63\x6C\x61\x73\x73": 'menu_wrapper',
-            "\x73\x74\x79\x6C\x65": 'left: 78px; right: 14px'
-        })['append']($('<ul/>', {
-            "\x63\x6C\x61\x73\x73": 'menu_inner'
-        })['prepend'](Autobot['addMenuItem']('AUTHORIZE', 'Account', 'Account'))['prepend'](Autobot['addMenuItem']('CONSOLE', 'Assistant', 'Assistant'))['prepend'](Autobot['addMenuItem']('ASSISTANT', 'Console', 'Console'))));
+        var el = Autobot.botWnd.getJQElement();
+        el.append($('<div/>', {
+            "class": 'menu_wrapper',
+            "style": 'left: 78px; right: 14px'
+        }).append($('<ul/>', {
+            "class": 'menu_inner'
+        }).prepend(Autobot.addMenuItem('AUTHORIZE', 'Account', 'Account'))
+          .prepend(Autobot.addMenuItem('CONSOLE', 'Assistant', 'Assistant'))
+          .prepend(Autobot.addMenuItem('ASSISTANT', 'Console', 'Console'))));
         
         if (typeof Autoattack !== 'undefined') {
-            _0xe20bx2['find']('.menu_inner li:last-child')['before'](Autobot['addMenuItem']('ATTACKMODULE', 'Attack', 'Autoattack'))
-        };
-        if (typeof Autobuild !== 'undefined') {
-            _0xe20bx2['find']('.menu_inner li:last-child')['before'](Autobot['addMenuItem']('CONSTRUCTMODULE', 'Build', 'Autobuild'))
-        };
-        if (typeof Autoculture !== 'undefined') {
-            _0xe20bx2['find']('.menu_inner li:last-child')['before'](Autobot['addMenuItem']('CULTUREMODULE', 'Culture', 'Autoculture'))
-        };
-        if (typeof Autofarm !== 'undefined') {
-            _0xe20bx2['find']('.menu_inner li:last-child')['before'](Autobot['addMenuItem']('FARMMODULE', 'Farm', 'Autofarm'))
-        };
-        $('#Autobot-AUTHORIZE')['click']()
-    },
-    addMenuItem: function (_0xe20bx3, _0xe20bx4, _0xe20bx5) {
-        return $('<li/>')['append']($('<a/>', {
-            "\x63\x6C\x61\x73\x73": 'submenu_link',
-            "\x68\x72\x65\x66": '#',
-            "\x69\x64": 'Autobot-' + _0xe20bx3,
-            "\x72\x65\x6C": _0xe20bx5
-        })['click'](function () {
-            Autobot['botWnd']['getJQElement']()['find']('li a.submenu_link')['removeClass']('active');
-            $(this)['addClass']('active');
-            Autobot['botWnd']['setContent2'](Autobot['getContent']($(this)['attr']('rel')));
-            if ($(this)['attr']('rel') == 'Console') {
-                var _0xe20bx6 = $('.terminal');
-                var _0xe20bx7 = $('.terminal-output')[0]['scrollHeight'];
-                _0xe20bx6['scrollTop'](_0xe20bx7)
-            }
-        })['append'](function () {
-            return _0xe20bx5 != 'Support' ? $('<span/>', {
-                "\x63\x6C\x61\x73\x73": 'left'
-            })['append']($('<span/>', {
-                "\x63\x6C\x61\x73\x73": 'right'
-            })['append']($('<span/>', {
-                "\x63\x6C\x61\x73\x73": 'middle'
-            })['html'](_0xe20bx4))) : '<a id="help-button" onclick="return false;" class="confirm"></a>'
-        }))
-    },
-    getContent: function (_0xe20bx8) {
-        if (_0xe20bx8 == 'Console') {
-            return ConsoleLog['contentConsole']()
-        } else {
-            if (_0xe20bx8 == 'Account') {
-                return Autobot['contentAccount']()
-            } else {
-                if (typeof window[_0xe20bx8] != 'undefined') {
-                    return window[_0xe20bx8]['contentSettings']()
-                };
-                return ''
-            }
+            el.find('.menu_inner li:last-child').before(Autobot.addMenuItem('ATTACKMODULE', 'Attack', 'Autoattack'));
         }
+        if (typeof Autobuild !== 'undefined') {
+            el.find('.menu_inner li:last-child').before(Autobot.addMenuItem('CONSTRUCTMODULE', 'Build', 'Autobuild'));
+        }
+        if (typeof Autoculture !== 'undefined') {
+            el.find('.menu_inner li:last-child').before(Autobot.addMenuItem('CULTUREMODULE', 'Culture', 'Autoculture'));
+        }
+        if (typeof Autofarm !== 'undefined') {
+            el.find('.menu_inner li:last-child').before(Autobot.addMenuItem('FARMMODULE', 'Farm', 'Autofarm'));
+        }
+        $('#Autobot-AUTHORIZE').click();
     },
-
-    /**
-     * First tab of bot 
-     */
+    addMenuItem: function (id, label, module) {
+        return $('<li/>').append($('<a/>', {
+            "class": 'submenu_link',
+            "href": '#',
+            "id": 'Autobot-' + id,
+            "rel": module
+        }).click(function () {
+            Autobot.botWnd.getJQElement().find('li a.submenu_link').removeClass('active');
+            $(this).addClass('active');
+            Autobot.botWnd.setContent2(Autobot.getContent($(this).attr('rel')));
+            if ($(this).attr('rel') === 'Console') {
+                var terminal = $('.terminal');
+                var height = $('.terminal-output')[0].scrollHeight;
+                terminal.scrollTop(height);
+            }
+        }).append(function () {
+            return module !== 'Support' ? $('<span/>', {
+                "class": 'left'
+            }).append($('<span/>', {
+                "class": 'right'
+            }).append($('<span/>', {
+                "class": 'middle'
+            }).html(label))) : '<a id="help-button" onclick="return false;" class="confirm"></a>';
+        }));
+    },
+    getContent: function (module) {
+        if (module === 'Console') {
+            return ConsoleLog.contentConsole();
+        } else if (module === 'Account') {
+            return Autobot.contentAccount();
+        } else if (typeof window[module] !== 'undefined') {
+            return window[module].contentSettings();
+        }
+        return '';
+    },
     contentAccount: function () {
-        var _rows = {
+        var rows = {
             "Name:": Game.player_name,
             "World:": Game.world_id,
             "Rank:": Game.player_rank,
             "Towns:": Game.player_villages,
             "Language:": Game.locale_lang
         };
-        var _table = $('<table/>', {
+        var table = $('<table/>', {
             "class": 'game_table layout_main_sprite',
             "cellspacing": '0',
             "width": '100%'
         }).append(function () {
-            var _counter = 0;
-            var _tbody = $('<tbody/>');
-            $.each(_rows, function (_index, _value) {
-                _tbody.append($('<tr/>', {
-                    "class": _counter % 2 ? 'game_table_even' : 'game_table_odd'
+            var counter = 0;
+            var tbody = $('<tbody/>');
+            $.each(rows, function (index, value) {
+                tbody.append($('<tr/>', {
+                    "class": counter % 2 ? 'game_table_even' : 'game_table_odd'
                 }).append($('<td/>', {
                     "style": 'background-color: #DFCCA6;width: 30%;'
-                }).html(_index)).append($('<td/>').html(_value)));
-                _counter++
+                }).html(index)).append($('<td/>').html(value)));
+                counter++;
             });
-            return _tbody
+            return tbody;
         });
-        return FormBuilder.gameWrapper('Account', 'account_property_wrapper', _table, 'margin-bottom:9px;')[0]['outerHTML'];
+        return FormBuilder.gameWrapper('Account', 'account_property_wrapper', table, 'margin-bottom:9px;')[0].outerHTML;
     },
     fixMessage: function () {
-        var _0xe20bx12 = function (_0xe20bx13) {
+        var fix = function (original) {
             return function () {
-                _0xe20bx13['apply'](this, arguments);
-                $(window)['unbind']('click')
-            }
+                original.apply(this, arguments);
+                $(window).unbind('click');
+            };
         };
-        HumanMessage['_initialize'] = _0xe20bx12(HumanMessage._initialize)
+        HumanMessage._initialize = fix(HumanMessage._initialize);
     },
-
-    /**
-     * Subscribe to ajaxComplete Event
-     */
     initAjax: function () {
-        $(document).ajaxComplete(function (_event, _xhr, _settings) {
-            if (_settings.url.indexOf(Autobot.domain) == -1 && _settings.url.indexOf('/game/') != -1 && _xhr.readyState == 4 && _xhr.status == 200) {
-                var _url = _settings.url.split('?');
-                var _action = _url[0].substr(6) + '/' + _url[1].split('&')[1].substr(7);
+        $(document).ajaxComplete(function (event, xhr, settings) {
+            if (settings.url.indexOf(Autobot.domain) === -1 && settings.url.indexOf('/game/') !== -1 && xhr.readyState === 4 && xhr.status === 200) {
+                var url = settings.url.split('?');
+                var action = url[0].substr(6) + '/' + url[1].split('&')[1].substr(7);
                 if (typeof Autobuild !== 'undefined') {
-                    Autobuild.calls(_action);
-                };
+                    Autobuild.calls(action);
+                }
                 if (typeof Autoattack !== 'undefined') {
-                    Autoattack.calls(_action, _xhr.responseText);
+                    Autoattack.calls(action, xhr.responseText);
                 }
             }
-        })
+        });
     },
-    randomize: function (_0xe20bx26, _0xe20bx27) {
-        return Math['floor'](Math['random']() * (_0xe20bx27 - _0xe20bx26 + 1)) + _0xe20bx26
+    randomize: function (min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
     },
-    secondsToTime: function (_0xe20bx28) {
-        var _0xe20bx29 = Math['floor'](_0xe20bx28 / 86400);
-        var _0xe20bx2a = Math['floor']((_0xe20bx28 % 86400) / 3600);
-        var _0xe20bx2b = Math['floor'](((_0xe20bx28 % 86400) % 3600) / 60);
-        return (_0xe20bx29 ? _0xe20bx29 + ' days ' : '') + (_0xe20bx2a ? _0xe20bx2a + ' hours ' : '') + (_0xe20bx2b ? _0xe20bx2b + ' minutes ' : '')
+    secondsToTime: function (seconds) {
+        var days = Math.floor(seconds / 86400);
+        var hours = Math.floor((seconds % 86400) / 3600);
+        var minutes = Math.floor(((seconds % 86400) % 3600) / 60);
+        return (days ? days + ' days ' : '') + (hours ? hours + ' hours ' : '') + (minutes ? minutes + ' minutes ' : '');
     },
-    timeToSeconds: function (_0xe20bx2c) {
-        var _0xe20bx2d = _0xe20bx2c['split'](':'),
-            _0xe20bx1e = 0,
-            _0xe20bx2e = 1;
-        while (_0xe20bx2d['length'] > 0) {
-            _0xe20bx1e += _0xe20bx2e * parseInt(_0xe20bx2d['pop'](), 10);
-            _0xe20bx2e *= 60
-        };
-        return _0xe20bx1e
+    timeToSeconds: function (time) {
+        var parts = time.split(':');
+        var total = 0;
+        var multiplier = 1;
+        while (parts.length > 0) {
+            total += multiplier * parseInt(parts.pop(), 10);
+            multiplier *= 60;
+        }
+        return total;
     },
-
-    createNotification: function (_0xe20bx30, _0xe20bx31) {
-        var _0xe20bx32 = (typeof Layout['notify'] == 'undefined') ? new NotificationHandler() : Layout;
-        _0xe20bx32['notify']($('#notification_area>.notification')['length'] + 1, _0xe20bx30, '<span><b>' + 'Autobot' + '</b></span>' + _0xe20bx31 + '<span class=\'small notification_date\'>' + 'Version ' + Autobot['version'] + '</span>')
+    createNotification: function (title, message) {
+        var handler = (typeof Layout.notify === 'undefined') ? new NotificationHandler() : Layout;
+        handler.notify($('#notification_area>.notification').length + 1, title, '<span><b>Autobot</b></span>' + message + '<span class="small notification_date">Version ' + Autobot.version + '</span>');
     },
-    toHHMMSS: function (_0xe20bx33) {
-        var _0xe20bx34 = ~~(_0xe20bx33 / 3600);
-        var _0xe20bx35 = ~~((_0xe20bx33 % 3600) / 60);
-        var _0xe20bx36 = _0xe20bx33 % 60;
-        ret = '';
-        if (_0xe20bx34 > 0) {
-            ret += '' + _0xe20bx34 + ':' + (_0xe20bx35 < 10 ? '0' : '')
-        };
-        ret += '' + _0xe20bx35 + ':' + (_0xe20bx36 < 10 ? '0' : '');
-        ret += '' + _0xe20bx36;
-        return ret
+    toHHMMSS: function (seconds) {
+        var hours = ~~(seconds / 3600);
+        var minutes = ~~((seconds % 3600) / 60);
+        var secs = seconds % 60;
+        var ret = '';
+        if (hours > 0) {
+            ret += hours + ':' + (minutes < 10 ? '0' : '');
+        }
+        ret += minutes + ':' + (secs < 10 ? '0' : '');
+        ret += secs;
+        return ret;
     },
-    stringify: function (_0xe20bx37) {
-        var _0xe20bx38 = typeof _0xe20bx37;
-        if (_0xe20bx38 === 'string') {
-            return '"' + _0xe20bx37 + '"'
-        };
-        if (_0xe20bx38 === 'boolean' || _0xe20bx38 === 'number') {
-            return _0xe20bx37
-        };
-        if (_0xe20bx38 === 'function') {
-            return _0xe20bx37.toString()
-        };
-        var _0xe20bx39 = [];
-        for (var _0xe20bx3a in _0xe20bx37) {
-            _0xe20bx39['push']('"' + _0xe20bx3a + '":' + this['stringify'](_0xe20bx37[_0xe20bx3a]))
-        };
-        return '{' + _0xe20bx39['join'](',') + '}'
+    stringify: function (obj) {
+        var type = typeof obj;
+        if (type === 'string') {
+            return '"' + obj + '"';
+        }
+        if (type === 'boolean' || type === 'number') {
+            return obj;
+        }
+        if (type === 'function') {
+            return obj.toString();
+        }
+        var items = [];
+        for (var key in obj) {
+            items.push('"' + key + '":' + this.stringify(obj[key]));
+        }
+        return '{' + items.join(',') + '}';
     },
-    town_map_info: function (_0xe20bx3b, _0xe20bx3c) {
-        if (_0xe20bx3b != undefined && _0xe20bx3b['length'] > 0 && _0xe20bx3c['player_name']) {
-            for (var _0xe20bx3d = 0; _0xe20bx3d < _0xe20bx3b['length']; _0xe20bx3d++) {
-                if (_0xe20bx3b[_0xe20bx3d]['className'] == 'flag town') {
+    town_map_info: function (towns, data) {
+        if (towns !== undefined && towns.length > 0 && data.player_name) {
+            for (var i = 0; i < towns.length; i++) {
+                if (towns[i].className === 'flag town') {
                     if (typeof Assistant !== 'undefined') {
-                        if (Assistant['settings']['town_names']) {
-                            $(_0xe20bx3b[_0xe20bx3d])['addClass']('active_town')
-                        };
-                        if (Assistant['settings']['player_name']) {
-                            $(_0xe20bx3b[_0xe20bx3d])['addClass']('active_player')
-                        };
-                        if (Assistant['settings']['alliance_name']) {
-                            $(_0xe20bx3b[_0xe20bx3d])['addClass']('active_alliance')
+                        if (Assistant.settings.town_names) {
+                            $(towns[i]).addClass('active_town');
                         }
-                    };
-                    $(_0xe20bx3b[_0xe20bx3d])['append']('<div class="player_name">' + (_0xe20bx3c['player_name'] || '') + '</div>');
-                    $(_0xe20bx3b[_0xe20bx3d])['append']('<div class="town_name">' + _0xe20bx3c['name'] + '</div>');
-                    $(_0xe20bx3b[_0xe20bx3d])['append']('<div class="alliance_name">' + (_0xe20bx3c['alliance_name'] || '') + '</div>');
-                    break
+                        if (Assistant.settings.player_name) {
+                            $(towns[i]).addClass('active_player');
+                        }
+                        if (Assistant.settings.alliance_name) {
+                            $(towns[i]).addClass('active_alliance');
+                        }
+                    }
+                    $(towns[i]).append('<div class="player_name">' + (data.player_name || '') + '</div>');
+                    $(towns[i]).append('<div class="town_name">' + data.name + '</div>');
+                    $(towns[i]).append('<div class="alliance_name">' + (data.alliance_name || '') + '</div>');
+                    break;
                 }
             }
-        };
-        return _0xe20bx3b
+        }
+        return towns;
     },
-    checkPremium: function (_0xe20bx3e) {
-        return $('.advisor_frame.' + _0xe20bx3e + ' div')['hasClass'](_0xe20bx3e + '_active')
+    checkPremium: function (type) {
+        return $('.advisor_frame.' + type + ' div').hasClass(type + '_active');
     },
-    /**
-     * Initialize the bot toolbar - COM PAINEL MINIMIZÁVEL
-     */
     initWindow: function () {
-        $('.nui_main_menu')['css']('top', '282px');
+        $('.nui_main_menu').css('top', '282px');
         
         var toolbox = $('<div/>', {
             class: 'nui_bot_toolbox'
         });
         
-        // Botão de minimizar/expandir
         var toggleBtn = $('<div/>', {
             class: 'toggle-panel-btn',
             title: 'Minimizar painel'
@@ -266,18 +243,14 @@ var Autobot = {
         toggleBtn.on('click', function() {
             var panel = $(this).closest('.nui_bot_toolbox');
             panel.toggleClass('minimized');
-            
             if (panel.hasClass('minimized')) {
                 $(this).find('.tooltip-text').text('Expandir painel');
             } else {
                 $(this).find('.tooltip-text').text('Minimizar painel');
             }
-            
-            var isMinimized = panel.hasClass('minimized');
-            localStorage.setItem('autobot_panel_minimized', isMinimized);
+            localStorage.setItem('autobot_panel_minimized', panel.hasClass('minimized'));
         });
         
-        // Restaura o estado anterior
         var wasMinimized = localStorage.getItem('autobot_panel_minimized') === 'true';
         if (wasMinimized) {
             toolbox.addClass('minimized');
@@ -287,34 +260,34 @@ var Autobot = {
         toolbox.append(toggleBtn);
         toolbox.append($('<div/>', {
             class: 'bot_menu layout_main_sprite'
-        })['append']($('<ul/>')['append']($('<li/>', {
+        }).append($('<ul/>').append($('<li/>', {
             id: 'Autofarm_onoff',
             class: 'disabled'
-        })['append']($('<span/>', {
+        }).append($('<span/>', {
             class: 'autofarm farm_town_status_0'
-        })))['append']($('<li/>', {
+        }))).append($('<li/>', {
             id: 'Autoculture_onoff',
             class: 'disabled'
-        })['append']($('<span/>', {
+        }).append($('<span/>', {
             class: 'autoculture farm_town_status_0'
-        })))['append']($('<li/>', {
+        }))).append($('<li/>', {
             id: 'Autobuild_onoff',
             class: 'disabled'
-        })['append']($('<span/>', {
+        }).append($('<span/>', {
             class: 'autobuild toolbar_activities_recruits'
-        })))['append']($('<li/>', {
+        }))).append($('<li/>', {
             id: 'Autoattack_onoff',
             class: 'disabled'
-        })['append']($('<span/>', {
+        }).append($('<span/>', {
             class: 'autoattack sword_icon'
-        })))['append']($('<li/>')['append']($('<span/>', {
+        }))).append($('<li/>').append($('<span/>', {
             href: '#',
             class: 'botsettings circle_button_settings'
-        })['on']('click', function () {
-            if (Autobot['isLogged']) {
-                Autobot['initWnd']()
+        }).on('click', function () {
+            if (Autobot.isLogged) {
+                Autobot.initWnd();
             }
-        })['mousePopup'](new MousePopup(DM['getl10n']('COMMON')['main_menu']['settings'])))))));
+        }).mousePopup(new MousePopup(DM.getl10n('COMMON').main_menu.settings))))));
         
         toolbox.append($('<div/>', {
             id: 'time_autobot',
@@ -327,88 +300,73 @@ var Autobot = {
         toolbox.insertAfter('.nui_left_box');
     },
     initMapTownFeature: function () {
-        var _0xe20bx3f = function (_0xe20bx13) {
+        var wrapper = function (original) {
             return function () {
-                var _0xe20bx3b = _0xe20bx13['apply'](this, arguments);
-                return Autobot['town_map_info'](_0xe20bx3b, arguments[0])
-            }
+                var towns = original.apply(this, arguments);
+                return Autobot.town_map_info(towns, arguments[0]);
+            };
         };
-        MapTiles['createTownDiv'] = _0xe20bx3f(MapTiles['createTownDiv'])
+        MapTiles.createTownDiv = wrapper(MapTiles.createTownDiv);
     },
     checkAutoRelogin: function () {
-        if (typeof $['cookie']('pid') !== 'undefined' && typeof $['cookie']('ig_conv_last_site') !== 'undefined') {
-            var _0xe20bx40 = $['cookie']('ig_conv_last_site')['match'](/\/\/(.*?)\.grepolis\.com/g)[0]['replace']('//', '')['replace']('.grepolis.com', '');
-            /* TODO
-            DataExchanger.Auth('checkAutorelogin', {
-                player_id: $['cookie']('pid'),
-                world_id: _0xe20bx40
-            }, function(_0xe20bx9) {
-                if (_0xe20bx9 != 0) {
-                    setTimeout(function() {
-                        DataExchanger['login_to_game_world'](_0xe20bx40)
-                    }, _0xe20bx9 * 1000)
-                }
-            })*/
+        if (typeof $.cookie('pid') !== 'undefined' && typeof $.cookie('ig_conv_last_site') !== 'undefined') {
+            var world = $.cookie('ig_conv_last_site').match(/\/\/(.*?)\.grepolis\.com/g)[0].replace('//', '').replace('.grepolis.com', '');
         }
     }
 };
+
 (function () {
-    String['prototype']['capitalize'] = function () {
-        return this['charAt'](0)['toUpperCase']() + this['slice'](1)
+    String.prototype.capitalize = function () {
+        return this.charAt(0).toUpperCase() + this.slice(1);
     };
     String.prototype.replaceAll = function (search, replacement) {
         return this.replace(new RegExp(search, 'g'), replacement);
     };
-    $['fn']['serializeObject'] = function () {
-        var _0xe20bx41 = {};
-        var _0xe20bx42 = this['serializeArray']();
-        $['each'](_0xe20bx42, function () {
-            if (_0xe20bx41[this['name']] !== undefined) {
-                if (!_0xe20bx41[this['name']]['push']) {
-                    _0xe20bx41[this['name']] = [_0xe20bx41[this['name']]]
-                };
-                _0xe20bx41[this['name']]['push'](this['value'] || '')
+    $.fn.serializeObject = function () {
+        var obj = {};
+        var arr = this.serializeArray();
+        $.each(arr, function () {
+            if (obj[this.name] !== undefined) {
+                if (!obj[this.name].push) {
+                    obj[this.name] = [obj[this.name]];
+                }
+                obj[this.name].push(this.value || '');
             } else {
-                _0xe20bx41[this['name']] = this['value'] || ''
+                obj[this.name] = this.value || '';
             }
         });
-        return _0xe20bx41
+        return obj;
     };
-    var _0xe20bx43 = setInterval(function () {
-        if (window != undefined) {
-            if ($('.nui_main_menu')['length'] &&
-                !$['isEmptyObject'](ITowns['towns'])) {
-                clearInterval(_0xe20bx43);
-                Autobot['initWindow']();
-                Autobot['initMapTownFeature']();
+    
+    var interval = setInterval(function () {
+        if (window !== undefined) {
+            if ($('.nui_main_menu').length && !$.isEmptyObject(ITowns.towns)) {
+                clearInterval(interval);
+                Autobot.initWindow();
+                Autobot.initMapTownFeature();
 
-                $['when'](
-                    $['getScript'](Autobot['domain'] + 'DataExchanger.js'),
-                    $['getScript'](Autobot['domain'] + 'ConsoleLog.js'),
-                    $['getScript'](Autobot['domain'] + 'FormBuilder.js'),
-                    $['getScript'](Autobot['domain'] + 'ModuleManager.js'),
-                    $['getScript'](Autobot['domain'] + 'Assistant.js'),
-                    $.Deferred(function (_0xe20bx44) {
-                        $(_0xe20bx44['resolve'])
-                    })
-                )['done'](function () {
-                    Autobot['init']()
-                })
-
+                $.when(
+                    $.getScript(Autobot.domain + 'DataExchanger.js'),
+                    $.getScript(Autobot.domain + 'ConsoleLog.js'),
+                    $.getScript(Autobot.domain + 'FormBuilder.js'),
+                    $.getScript(Autobot.domain + 'ModuleManager.js'),
+                    $.getScript(Autobot.domain + 'Assistant.js'),
+                    $.Deferred(function (def) { def.resolve(); })
+                ).done(function () {
+                    Autobot.init();
+                });
             } else {
-                if (/grepolis\.com\/start\?nosession/g ['test'](window['location']['href'])) {
-                    clearInterval(_0xe20bx43);
-                    $['when'](
-                        $['getScript'](Autobot['domain'] + 'DataExchanger.js'),
-                        $['getScript'](Autobot['domain'] + 'Redirect.js'),
-                        $.Deferred(function (_0xe20bx44) {
-                            $(_0xe20bx44['resolve'])
-                        })
-                    )['done'](function () {
-                        Autobot['checkAutoRelogin']()
-                    })
+                if (/grepolis\.com\/start\?nosession/g.test(window.location.href)) {
+                    clearInterval(interval);
+                    $.when(
+                        $.getScript(Autobot.domain + 'DataExchanger.js'),
+                        $.getScript(Autobot.domain + 'Redirect.js'),
+                        $.Deferred(function (def) { def.resolve(); })
+                    ).done(function () {
+                        Autobot.checkAutoRelogin();
+                    });
                 }
             }
         }
-    }, 100)
-})()
+    }, 100);
+})();
