@@ -1,7 +1,7 @@
 var Autobot = {
     title: 'Autobot',
     version: 'v0.55',
-    domain: 'https://cdn.jsdelivr.net/gh/gredfc/lagostas@main/', // ← USANDO CDN
+    domain: 'https://cdn.jsdelivr.net/gh/gredfc/lagostas@main/',
     botWnd: '',
     isLogged: false,
     Account: {
@@ -27,7 +27,7 @@ var Autobot = {
         ModuleManager.loadModules();
     },
     /**
-     * Initialize bot window
+     * Initialize bot window - CORRIGIDO
      */
     initWnd: function () {
         if (!Autobot['isLogged']) {
@@ -41,7 +41,8 @@ var Autobot = {
             Autobot['botWnd'] = undefined
         };
 
-        Autobot.botWnd = Layout.dialogWindow.open('', Autobot.title + ' v<span style="font-size: 10px;">' + Autobot.version + '</span>', 500, 350, '', false);
+        // CORRIGIDO: Removeu o HTML do título
+        Autobot.botWnd = Layout.dialogWindow.open('', Autobot.title + ' v' + Autobot.version, 500, 350, '', false);
         Autobot.botWnd.setHeight([350])
         Autobot.botWnd.setPosition(['center', 'center']);
         var _0xe20bx2 = Autobot.botWnd.getJQElement();
@@ -50,7 +51,8 @@ var Autobot = {
             "\x73\x74\x79\x6C\x65": 'left: 78px; right: 14px'
         })['append']($('<ul/>', {
             "\x63\x6C\x61\x73\x73": 'menu_inner'
-        })['prepend'](Autobot['addMenuItem']('AUTHORIZE', 'Account', 'Account'))['prepend'](Autobot['addMenuItem']('CONSOLE', 'Assistant', 'Assistant'))['prepend'](Autobot['addMenuItem']('ASSISTANT', 'Console', 'Console')) /*['prepend'](Autobot['addMenuItem']('SUPPORT', 'Support', 'Support'))*/ ));
+        })['prepend'](Autobot['addMenuItem']('AUTHORIZE', 'Account', 'Account'))['prepend'](Autobot['addMenuItem']('CONSOLE', 'Assistant', 'Assistant'))['prepend'](Autobot['addMenuItem']('ASSISTANT', 'Console', 'Console'))));
+        
         if (typeof Autoattack !== 'undefined') {
             _0xe20bx2['find']('.menu_inner li:last-child')['before'](Autobot['addMenuItem']('ATTACKMODULE', 'Attack', 'Autoattack'))
         };
@@ -97,14 +99,10 @@ var Autobot = {
             if (_0xe20bx8 == 'Account') {
                 return Autobot['contentAccount']()
             } else {
-                /*if (_0xe20bx8 == 'Support') {
-                    return Autobot['contentSupport']()
-                } else {*/
                 if (typeof window[_0xe20bx8] != 'undefined') {
                     return window[_0xe20bx8]['contentSettings']()
                 };
                 return ''
-                //}
             }
         }
     },
@@ -246,11 +244,48 @@ var Autobot = {
     checkPremium: function (_0xe20bx3e) {
         return $('.advisor_frame.' + _0xe20bx3e + ' div')['hasClass'](_0xe20bx3e + '_active')
     },
+    /**
+     * Initialize the bot toolbar - COM PAINEL MINIMIZÁVEL
+     */
     initWindow: function () {
         $('.nui_main_menu')['css']('top', '282px');
-        $('<div/>', {
+        
+        var toolbox = $('<div/>', {
             class: 'nui_bot_toolbox'
-        })['append']($('<div/>', {
+        });
+        
+        // Botão de minimizar/expandir
+        var toggleBtn = $('<div/>', {
+            class: 'toggle-panel-btn',
+            title: 'Minimizar painel'
+        }).append($('<span/>', {
+            class: 'tooltip-text',
+            text: 'Minimizar/Expandir'
+        }));
+        
+        toggleBtn.on('click', function() {
+            var panel = $(this).closest('.nui_bot_toolbox');
+            panel.toggleClass('minimized');
+            
+            if (panel.hasClass('minimized')) {
+                $(this).find('.tooltip-text').text('Expandir painel');
+            } else {
+                $(this).find('.tooltip-text').text('Minimizar painel');
+            }
+            
+            var isMinimized = panel.hasClass('minimized');
+            localStorage.setItem('autobot_panel_minimized', isMinimized);
+        });
+        
+        // Restaura o estado anterior
+        var wasMinimized = localStorage.getItem('autobot_panel_minimized') === 'true';
+        if (wasMinimized) {
+            toolbox.addClass('minimized');
+            toggleBtn.find('.tooltip-text').text('Expandir painel');
+        }
+        
+        toolbox.append(toggleBtn);
+        toolbox.append($('<div/>', {
             class: 'bot_menu layout_main_sprite'
         })['append']($('<ul/>')['append']($('<li/>', {
             id: 'Autofarm_onoff',
@@ -279,12 +314,17 @@ var Autobot = {
             if (Autobot['isLogged']) {
                 Autobot['initWnd']()
             }
-        })['mousePopup'](new MousePopup(DM['getl10n']('COMMON')['main_menu']['settings']))))))['append']($('<div/>', {
+        })['mousePopup'](new MousePopup(DM['getl10n']('COMMON')['main_menu']['settings'])))))));
+        
+        toolbox.append($('<div/>', {
             id: 'time_autobot',
             class: 'time_row'
-        }))['append']($('<div/>', {
+        }));
+        toolbox.append($('<div/>', {
             class: 'bottom'
-        }))['insertAfter']('.nui_left_box')
+        }));
+        
+        toolbox.insertAfter('.nui_left_box');
     },
     initMapTownFeature: function () {
         var _0xe20bx3f = function (_0xe20bx13) {
