@@ -1,7 +1,7 @@
 var Autobot = {
     title: 'Autobot',
     version: 'v0.55',
-    domain: window.location.protocol + "//cdn.jsdelivr.net/gh/alexandre2017009p-star/bot7u8@5.99/",
+    domain: window.location.protocol + "https://raw.githubusercontent.com/gredfc/lagostas/main/",
     botWnd: '',
     isLogged: false,
     Account: {
