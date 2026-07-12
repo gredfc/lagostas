@@ -1,7 +1,7 @@
 var Autobot = {
     title: 'Autobot',
     version: 'v0.55',
-    domain: 'https://raw.githubusercontent.com/gredfc/lagostas/main/',
+    domain: 'https://cdn.jsdelivr.net/gh/gredfc/lagostas@main/', // ← USANDO CDN
     botWnd: '',
     isLogged: false,
     Account: {
